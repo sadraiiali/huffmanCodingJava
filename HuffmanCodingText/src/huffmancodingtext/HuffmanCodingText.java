@@ -20,9 +20,13 @@ import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Pair;
@@ -40,33 +44,50 @@ public class HuffmanCodingText extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        Button btn = new Button();
-        btn.setText("Input Text File");
-        btn.setOnAction(new EventHandler<ActionEvent>() {
+        Button codeBtn = new Button();
+        codeBtn.setText("Input Text File for coding !");
+        codeBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
                 FileChooser fileChooser = new FileChooser();
                 fileChooser.setTitle("Open input File");
                 try {
-                    runCoding(fileChooser.showOpenDialog(primaryStage),primaryStage);
+                    runCoding(fileChooser.showOpenDialog(primaryStage), primaryStage);
                 } catch (IOException ex) {
                     Logger.getLogger(HuffmanCodingText.class.getName()).log(Level.SEVERE, null, ex);
                 }
 
             }
         });
+        Button decodeBtn = new Button();
+        decodeBtn.setText("Input Text File for decoding !");
+        decodeBtn.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Open input File");
+                try {
+                    runCoding(fileChooser.showOpenDialog(primaryStage), primaryStage);
+                } catch (IOException ex) {
+                    Logger.getLogger(HuffmanCodingText.class.getName()).log(Level.SEVERE, null, ex);
+                }
 
-        StackPane root = new StackPane();
-        root.getChildren().add(btn);
-
-        Scene scene = new Scene(root, 300, 250);
+            }
+        });
+        VBox root = new VBox();
+        root.setAlignment(Pos.CENTER);
+        root.setSpacing(10);
+        root.getChildren().add(0, codeBtn);
+        root.getChildren().add(1, decodeBtn);
+        
+        Scene scene = new Scene(root, 350, 250);
 
         primaryStage.setTitle("Huffman Coding | by Piker");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
-    static void runCoding(File inputFile,Stage primaryStage) throws IOException {
+    static void runCoding(File inputFile, Stage primaryStage) throws IOException {
 
         Scanner input = new Scanner(System.in);
         String inputText = readFile(inputFile);
@@ -91,13 +112,9 @@ public class HuffmanCodingText extends Application {
         String outString = codeThisString(inputText);
 //        System.out.println(outString);
         byte[] bytesToWriteInFile = fromBinary(codeThisString(inputText));
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Save Coded File");
-        File file = fileChooser.showSaveDialog(primaryStage);
-        FileOutputStream fos = new FileOutputStream(file.getPath()+file.getName());
-        fos.write(bytesToWriteInFile);
-        fos.close();
-        Path path = Paths.get(file.getPath()+file.getName());
+
+        String savedFile = saveFile(primaryStage, bytesToWriteInFile,inputFile);
+        Path path = Paths.get(savedFile);
         byte[] data = Files.readAllBytes(path);
 //        System.out.println(toBinary(data));
 //        System.out.println(decode(outString, head));
@@ -210,4 +227,27 @@ public class HuffmanCodingText extends Application {
         return out;
     }
 
+    static String saveFile(Stage primaryStage, byte[] bytesToWriteInFile,File mainFile) throws FileNotFoundException, IOException {
+        // save to file 
+        String out = "";
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Coded File");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("piker coding format", ".pik")
+        );
+        File outFile = fileChooser.showSaveDialog(primaryStage);
+        FileOutputStream fos = new FileOutputStream(outFile);
+        fos.write(bytesToWriteInFile);
+        fos.close();
+        Alert alert = new Alert(AlertType.INFORMATION);
+        alert.setTitle("Information Dialog");
+        alert.setHeaderText(null);
+        alert.setContentText("I have a great message for you!\n:) file coded successfully\nMain file size = "+(double)((int)(((double)mainFile.length()/1024)*100))/100+"KB\nCoded file size = "+(double)((int)((int)((double)outFile.length()/1024)*100))/100+"KB");
+        alert.showAndWait();
+        return outFile.getPath();
+    }
+    
+    static void readToDecode(String File){
+        
+    }
 }
